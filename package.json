@@ -8,7 +8,7 @@
   "scripts": {
     "build": "npm run prebuild && npm run build:worker",
     "build:nest": "nest build",
-    "build:worker": "esbuild src/worker.ts --bundle --platform=neutral --format=esm --outdir=dist/worker --target=es2022 --external:repl --external:util --external:iterare --external:stream --external:os --external:async_hooks --external:crypto --external:@nestjs/microservices --external:@nestjs/platform-express --external:class-transformer --external:class-validator --external:@nestjs/websockets/socket-module --alias:stream=./src/stream-shim.ts --alias:util=./src/util-shim.ts --alias:iterare=./src/iterare-shim.ts --alias:async_hooks=./src/async-hooks-shim.ts --alias:perf_hooks=./src/perf-hooks-shim.ts --define:process=\"{\\\"env\\\":{}}\"",
+    "build:worker": "esbuild src/worker.ts --bundle --platform=neutral --format=esm --outdir=dist/worker --target=es2022 --external:repl --external:util --external:iterare --external:stream --external:os --external:async_hooks --external:@nestjs/microservices --external:@nestjs/platform-express --external:class-transformer --external:class-validator --external:@nestjs/websockets/socket-module --alias:stream=./src/stream-shim.ts --alias:util=./src/util-shim.ts --alias:iterare=./src/iterare-shim.ts --alias:async_hooks=./src/async-hooks-shim.ts --alias:perf_hooks=./src/perf-hooks-shim.ts --alias:crypto=./src/crypto-shim.ts --define:process=\"{\\\"env\\\":{}}\"",
     "prebuild": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
