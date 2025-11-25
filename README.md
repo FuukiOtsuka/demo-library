@@ -1,98 +1,78 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+## このリポジトリは何？
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+このリポジトリは、**図書管理アプリ** のバックエンド部分を管理するものです。
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**NestJSフレームワーク**をベースに構築されており、リクエスト処理、ビジネスロジック、データ永続化（**Firebase**）など、
+サーバーレス環境におけるAPI提供機能を担当します。特に、Node.js環境を持たないWorkersでNestJSを安定稼働させるための独自の工夫（**シムファイルの利用**）を含んでいます。
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 設計思想
 
-## Project setup
+本プロジェクトは「**高速開発 × NestJS標準構成**」の考え方をベースに設計されています。大規模なDDDの厳格な分離を避け、NestJSが提供する標準的な構造を最大限に活用することで、**最速デプロイ**と**迅速な機能追加**を目指します。
 
-```bash
-$ npm install
+### この思想のメリット
+
+* **最速の開発速度:** 関連するコード（Controller, Service, DBアクセス）がモジュール内にフラットに配置されるため、ファイル間の移動が少なく、機能の実装が最も速く進みます。
+* **Worker環境への特化:** Node.jsの組み込みモジュールを代替するシムファイル群を専用フォルダにまとめることで、アプリケーションコードとインフラ適応コードの分離を明確にしています。
+* **NestJSとの高親和性:** NestJSが推奨するモジュールとサービスのパターンに忠実であり、学習コストが低く、新しい開発者でもすぐにコードベースを理解できます。
+
+---
+
+## ディレクトリ構成と各コンポーネントの役割
+
+本プロジェクトは、**モジュールごと（関心ごと）** に機能を分割する「関心駆動な構成」を採用し、サービス内でロジックとデータアクセスを統合しています。
+
+### ディレクトリ構成
+最終的に採用された構成は以下の通りです。
+```
+/src
+├── main.ts                       # NestJSのエントリポイントとなるファイル
+├── app.module.ts                 # NestJSの大元のモジュール
+├── worker.ts                     # Cloudflare Workersの実行エントリーポイント（fetchハンドラ）
+│
+├── /shim                         # Node.js組み込みモジュールの代替実装（async_hooks, stream, cryptoなど）
+│   └── (*-shim.ts ファイル群)
+│
+├── /firebase                     # Firebase連携に必要なサービスの集約
+│   └── firebase.service.ts       # Firebase Web SDKの初期化とクライアントインスタンスの提供
+│
+└── /<module-name> (例: /todos)   # 機能単位のモジュール群
+    ├── todos.module.ts           # Todo機能のコントローラーとサービスを定義
+    ├── todos.controller.ts       # HTTPリクエストの受付・処理
+    ├── todos.service.ts          # アプリケーションロジックとDBアクセスの中核
+    ├── todos.dto.ts              # リクエスト/レスポンスのデータ転送オブジェクト
+    └── todos.entity.ts           # アプリケーション内で扱うデータ構造
 ```
 
-## Compile and run the project
+### コンポーネントの役割
 
-```bash
-# development
-$ npm run start
+| コンポーネント | 役割 | 責務 |
+| :--- | :--- | :--- |
+| **Controller (`todos.controller.ts`)** | **入力層** | HTTPリクエストを受け付け、入力値の検証後、アプリケーションサービスを呼び出す。ビジネスロジックは持たない。 |
+| **Service (`todos.service.ts`)** | **アプリケーション/データアクセス層** | ユースケースを実現する。**ビジネスロジックとFirebaseへの具体的なデータアクセス処理を統合**し、全ての処理の中核を担う。 |
+| **Firebase Service (`firebase.service.ts`)** | **外部連携層** | Firebase Web SDKの初期化、認証情報の管理、Workers環境下でのDBクライアント提供のみを行う。 |
+| **DTO (`todos.dto.ts`)** | **データ転送オブジェクト** | データのやり取りの橋渡しをする。バリデーションを行い、外部とのデータ送受信の形式を統一する。 |
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## Workers環境への適応
 
-## Run tests
+本プロジェクトのデプロイ成功は、以下の**シムファイル**群によって実現されています。
 
-```bash
-# unit tests
-$ npm run test
+### Shim レイヤーの役割
 
-# e2e tests
-$ npm run test:e2e
+Cloudflare Workersランタイムが持たないNode.jsの組み込みモジュール（`stream`, `async_hooks`, `crypto`, `os` など）へのNestJSからの参照を、**カスタムで作成したダミーの実装**に置き換えることで、実行時エラーを回避しています。
 
-# test coverage
-$ npm run test:cov
-```
+* **esbuild の `--alias`** オプションが、これらのシムファイルへのリダイレクトを担当しています。
+* この層があるおかげで、アプリケーションコード（`/todos`）はWorkersの制約を意識することなく記述できます。
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 主な使用ライブラリと選定理由
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| ライブラリ | 役割 | 選定理由 |
+| :--- | :--- | :--- |
+| **NestJS** | バックエンドフレームワーク | TypeScript、モジュールベース、DIコンテナを標準で備え、Workers上で高効率なAPIを構築するために採用。 |
+| **esbuild** | バンドラー | Workersの制約に対応するため、高速かつ強力なバンドル、特にNode.jsモジュールをシムに置き換えるエイリアス機能を利用するために採用。 |
+| **Firebase (Firestore/DB)** | データベース | フルマネージドなNoSQL DBであり、HTTP/SベースのWeb SDKを通じてWorkers環境からのアクセスが容易であるため採用。 |
