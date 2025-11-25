@@ -13,12 +13,11 @@ import { AppService } from './app.service';
 let appPromise: Promise<INestApplicationContext> | null = null;
 
 async function getApp(): Promise<INestApplicationContext> {
-  // 戻り値の型もINestApplicationContextに指定
   if (!appPromise) {
-    // NestFactory.create() の代わりに createApplicationContext() を使用
-    // これにより、HTTPプラットフォーム（Expressなど）の初期化をスキップします。
+    // 【修正箇所】loggerオプションを完全に削除するか、シンプルにする
     appPromise = NestFactory.createApplicationContext(AppModule, {
-      logger: ['error', 'warn'],
+      // logger: ['error', 'warn'],  <-- この行を削除/コメントアウト
+      // NestJSのロガーも内部でNode.jsのutilやperf_hooksなどに依存するため
     });
     await appPromise;
   }
