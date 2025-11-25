@@ -1,5 +1,14 @@
-# wrangler.toml
+# wrangler.toml (統合された正しい設定)
+
 name = "demo-library-api"
-main = "dist/worker/worker.js"          # 修正後のビルド後のエントリファイルを指定
+main = "dist/worker/worker.js"
 compatibility_date = "2024-05-01"
+
+# Node.js互換フラグの定義 (この形でOKです)
 compatibility_flags = ["nodejs_compat"]
+
+# [workers.compatibility] セクションは、グローバルの compatibility_flags を使用する場合、
+# または環境ごとに異なる設定をする場合に必要ですが、今回は不要です。
+# [workers.compatibility]
+# compatibility_flags = ["nodejs_compat"]
+# このセクションは削除して、上のグローバルな定義のみにすることをお勧めします。
