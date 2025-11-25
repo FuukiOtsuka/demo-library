@@ -9,6 +9,7 @@
     "build": "npm run prebuild && npm run build:worker",
     "build:nest": "nest build",
     "build:worker": "esbuild src/worker.ts --bundle --platform=neutral --format=esm --outdir=dist/worker --target=es2022 --external:repl --external:util --external:iterare --external:stream --external:os --external:perf_hooks --external:async_hooks --external:crypto --external:@nestjs/microservices --external:@nestjs/platform-express --external:class-transformer --external:class-validator --external:@nestjs/websockets/socket-module",
+    "prebuild": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
