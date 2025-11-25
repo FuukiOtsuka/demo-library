@@ -1,0 +1,5 @@
+# wrangler.toml
+name = "demo-library-api"
+main = "dist/worker.js"                 # ビルド後のエントリファイルを指定（仮）
+compatibility_date = "2024-05-01"
+compatibility_flags = ["nodejs_compat"] # Node.jsの非互換性を緩和する重要なフラグ
