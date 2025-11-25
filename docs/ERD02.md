@@ -1,3 +1,4 @@
+```mermaid
 erDiagram
     %% ----------------------------------------------------
     %% エンティティの定義 (コレクション)
@@ -37,3 +38,4 @@ erDiagram
     
     USERS ||--o{ LOANS : has_loan_record
     BOOKS ||--o{ LOANS : is_borrowed_in
+```
