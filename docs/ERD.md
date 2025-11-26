@@ -20,11 +20,11 @@ erDiagram
         string id PK "書籍ID"
         string title "タイトル"
         string author "著者"
-        string categoryId FK "カテゴリID"            // ★ カテゴリを外部キーに変更
-        string publisher "出版社名"                   // ★ 追加: API要件対応
-        string isbn "ISBN"                            // ★ 追加: API要件対応
-        string imageUrl "画像URL"                     // ★ 追加: API要件対応
-        string memo "管理メモ"                       // ★ 追加: API要件対応
+        string categoryId FK "カテゴリID"            
+        string publisher "出版社名"                   
+        string isbn "ISBN"                            
+        string imageUrl "画像URL"                    
+        string memo "管理メモ"                       
         int totalCopies "総蔵書数"
         int borrowedCopies "貸出中冊数 (カウンター)"
         bool isAvailable "貸出可能フラグ"
@@ -38,7 +38,7 @@ erDiagram
         timestamp borrowedAt "貸出日時"
         timestamp dueDate "返却期限日"
         timestamp returnedAt "返却日時"
-        string processedByUserId FK "返却処理者ID"    // ★ 追加: API要件対応
+        string processedByUserId FK "返却処理者ID"   
     }
     
     %% ----------------------------------------------------
